@@ -119,6 +119,7 @@ class TransferData:
             f"-d {db_conn_data.dbname} "
             f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
         )
+        print(restore_cmd)
         subprocess.call(restore_cmd, shell=True)
 
     def copy_dump_to_local(self, ssh_connection):
