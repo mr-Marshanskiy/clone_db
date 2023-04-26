@@ -163,7 +163,9 @@ class TransferData:
         os.chdir(project_path)
 
         venv_path = os.getenv('VENV_NAME')
+        print('Applying migrations...')
         os.system(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
+        print('Deleting files...')
         os.system(f"{venv_path}/bin/python {project_path}/manage.py delete_files")
         os.chdir(default_path)
         return
