@@ -140,8 +140,7 @@ class TransferData:
         ) as conn:
             cur = conn.cursor()
             # Очистка таблицы
-            cur.execute("TRUNCATE common_file CASCADE;")
-            cur.execute("TRUNCATE django_migrations CASCADE;")
+            cur.execute("TRUNCATE django_migrations;")
             conn.commit()
         return
 
@@ -158,21 +157,29 @@ class TransferData:
         os.remove(f"{os.getenv(f'LOCAL_DUMP_PATH')}")
         return
 
+    def delete_files(self):
+        self.activate_venv_in_subprocess()
+        subprocess.call(f"python manage.py migrate --fake", shell=True)
+        return
+
+    def activate_venv_in_subprocess(self):
+        venv_path = os.path.join(
+            os.getenv('VIRTUAL_ENV'), 'bin', 'activate'
+        )
+        subprocess.call(f"source {venv_path}")
+        return
+
     def move_data(self):
         print('Dumping data and copy to local server...')
-        self.dump_data()
-        print('Dumping done.')
-        print('Restoring dump...')
-        self.restore_dump()
-        print('Restoring done.')
-        print('Removing old files...')
-        # self.remove_old_files()
-        print('Removing done.')
-        print('Clearing tables in db...')
+        # self.dump_data()
+        # print('Restoring dump...')
+        # self.restore_dump()
+        # print('Removing old files...')
+        # # self.remove_old_files()
+        # print('Clearing tables in db...')
         # self.clear_tables()
-        print('Clearing dome...')
-        print('Dont forget to execute command "python manage.py migrate --fake" in your project folder.')
-
+        print('Deleting files...')
+        self.delete_files()
 
 if __name__ == '__main__':
     # Загрузка данных из .env файла
