@@ -158,18 +158,12 @@ class TransferData:
         return
 
     def delete_files(self):
-        default_path = os.getcwd()
-        os.chdir(os.getenv('PATH_TO_PROJECT'))
-        os.system(f"source {os.getenv(f'VIRTUAL_ENV')}/bin/activate")
-        os.system(f"python manage.py migrate --fake")
-        os.chdir(default_path)
-        return
-
-    def activate_venv_in_subprocess(self):
-        venv_path = os.path.join(
-            os.getenv('VIRTUAL_ENV'), 'bin', 'activate'
+        project_path = os.getenv('PATH_TO_PROJECT')
+        venv_path = os.getenv('VIRTUAL_ENV')
+        print(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
+        os.system(
+            f"{venv_path}/bin/python {project_path}/manage.py migrate --fake"
         )
-        subprocess.run(f"source {venv_path}", shell=True)
         return
 
     def move_data(self):
