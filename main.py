@@ -159,14 +159,14 @@ class TransferData:
 
     def delete_files(self):
         self.activate_venv_in_subprocess()
-        subprocess.call(f"python manage.py migrate --fake", shell=True)
+        subprocess.run(f"python manage.py migrate --fake", shell=True)
         return
 
     def activate_venv_in_subprocess(self):
         venv_path = os.path.join(
             os.getenv('VIRTUAL_ENV'), 'bin', 'activate'
         )
-        subprocess.call(f"source {venv_path}")
+        subprocess.run(f"source {venv_path}", cwd=os.getenv('PATH_TO_PROJECT'))
         return
 
     def move_data(self):
