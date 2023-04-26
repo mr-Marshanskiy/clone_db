@@ -172,15 +172,16 @@ class TransferData:
 
     def move_data(self):
         print('Dumping data and copy to local server...')
-        # self.dump_data()
+        self.dump_data()
         print('Restoring dump...')
-        # self.restore_dump()
-        # print('Removing old files...')
-        # # self.remove_old_files()
-        # print('Clearing tables in db...')
-        # self.clear_tables()
+        self.restore_dump()
+        print('Removing old files...')
+        # self.remove_old_files()
+        print('Clearing tables in db...')
+        self.clear_tables()
         print('Deleting files...')
         self.delete_files()
+
 
 if __name__ == '__main__':
     # Загрузка данных из .env файла
