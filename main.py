@@ -117,7 +117,7 @@ class TransferData:
             f"-u {db_conn_data.user} "
             f"pg_restore "
             f"-d {db_conn_data.dbname} "
-            f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
+            f"-F t -c -f {os.getenv(f'LOCAL_DUMP_PATH')}"
         )
         print(restore_cmd)
         subprocess.call(restore_cmd, shell=True)
