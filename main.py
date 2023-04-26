@@ -105,7 +105,7 @@ class TransferData:
             f"-u {db_conn_data.user} "
             f"pg_dump "
             f"{db_conn_data.dbname} "
-            f"-F c > {os.getenv(f'REMOTE_DUMP_PATH')}"
+            f"-F t > {os.getenv(f'REMOTE_DUMP_PATH')}"
         )
         stdin, stdout, stderr = ssh_connection.exec_command(pg_dump_cmd)
         stdout.channel.recv_exit_status()
@@ -117,7 +117,7 @@ class TransferData:
             f"-u {db_conn_data.user} "
             f"pg_restore "
             f"-d {db_conn_data.dbname} "
-            f"-F c -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
+            f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
         )
         subprocess.call(restore_cmd, shell=True)
 
