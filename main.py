@@ -158,12 +158,16 @@ class TransferData:
         return
 
     def delete_files(self):
+        default_path = os.getcwd()
         project_path = os.getenv('PATH_TO_PROJECT')
+        os.chdir(project_path)
+
         venv_path = os.getenv('VENV_NAME')
         print(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
         os.system(
             f"{venv_path}/bin/python {project_path}/manage.py migrate --fake"
         )
+        os.chdir(default_path)
         return
 
     def move_data(self):
