@@ -166,10 +166,10 @@ class TransferData:
         self.restore_dump()
         print('Restoring done.')
         print('Removing old files...')
-        # self.remove_old_files()
+        self.remove_old_files()
         print('Removing done.')
         print('Clearing tables in db...')
-        # self.clear_tables()
+        self.clear_tables()
         print('Clearing dome...')
         print('Dont forget to execute command "python manage.py migrate --fake" in your project folder.')
 
