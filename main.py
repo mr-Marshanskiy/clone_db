@@ -159,7 +159,7 @@ class TransferData:
 
     def delete_files(self):
         project_path = os.getenv('PATH_TO_PROJECT')
-        venv_path = os.getenv('VIRTUAL_ENV')
+        venv_path = os.getenv('VENV_NAME')
         print(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
         os.system(
             f"{venv_path}/bin/python {project_path}/manage.py migrate --fake"
