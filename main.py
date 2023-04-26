@@ -116,7 +116,6 @@ class TransferData:
             f"sudo "
             f"-u {db_conn_data.user} "
             f"pg_restore "
-            f"-d {db_conn_data.dbname} "
             f"-F t -c -f {os.getenv(f'LOCAL_DUMP_PATH')}"
         )
         print(restore_cmd)
