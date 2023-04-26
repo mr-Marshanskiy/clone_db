@@ -158,8 +158,11 @@ class TransferData:
         return
 
     def delete_files(self):
+        default_path = os.getcwd()
+        os.chdir(os.getenv('PATH_TO_PROJECT'))
         self.activate_venv_in_subprocess()
         subprocess.run(f"python manage.py migrate --fake", shell=True)
+        os.chdir(default_path)
         return
 
     def activate_venv_in_subprocess(self):
@@ -172,7 +175,7 @@ class TransferData:
     def move_data(self):
         print('Dumping data and copy to local server...')
         # self.dump_data()
-        # print('Restoring dump...')
+        print('Restoring dump...')
         # self.restore_dump()
         # print('Removing old files...')
         # # self.remove_old_files()
