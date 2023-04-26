@@ -166,7 +166,7 @@ class TransferData:
         self.restore_dump()
         print('Restoring done.')
         print('Removing old files...')
-        self.remove_old_files()
+        # self.remove_old_files()
         print('Removing done.')
         print('Clearing tables in db...')
         self.clear_tables()
