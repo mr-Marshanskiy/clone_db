@@ -157,16 +157,14 @@ class TransferData:
         os.remove(f"{os.getenv(f'LOCAL_DUMP_PATH')}")
         return
 
-    def delete_files(self):
+    def project_commands(self):
         default_path = os.getcwd()
         project_path = os.getenv('PATH_TO_PROJECT')
         os.chdir(project_path)
 
         venv_path = os.getenv('VENV_NAME')
-        print(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
-        os.system(
-            f"{venv_path}/bin/python {project_path}/manage.py migrate --fake"
-        )
+        os.system(f"{venv_path}/bin/python {project_path}/manage.py migrate --fake")
+        os.system(f"{venv_path}/bin/python {project_path}/manage.py delete_files")
         os.chdir(default_path)
         return
 
@@ -180,7 +178,7 @@ class TransferData:
         print('Clearing tables in db...')
         self.clear_tables()
         print('Deleting files...')
-        self.delete_files()
+        self.project_commands()
 
 
 if __name__ == '__main__':
