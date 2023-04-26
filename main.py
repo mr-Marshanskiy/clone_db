@@ -169,7 +169,7 @@ class TransferData:
         venv_path = os.path.join(
             os.getenv('VIRTUAL_ENV'), 'bin', 'activate'
         )
-        subprocess.run(f"source {venv_path}", cwd=os.getenv('PATH_TO_PROJECT'))
+        subprocess.run(f"source {venv_path}", shell=True)
         return
 
     def move_data(self):
