@@ -116,9 +116,11 @@ class TransferData:
             f"sudo "
             f"-u {db_conn_data.user} "
             f"pg_restore "
-            f"-F t -c -f {os.getenv(f'LOCAL_DUMP_PATH')}"
+            f"-d {db_conn_data.dbname} "
+            f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
         )
-        print(restore_cmd)
+        os.chdir(os.getcwd())
+        print()
         subprocess.call(restore_cmd, shell=True)
 
     def copy_dump_to_local(self, ssh_connection):
@@ -158,9 +160,9 @@ class TransferData:
         return
 
     def move_data(self):
-        # print('Dumping data and copy to local server...')
-        # self.dump_data()
-        # print('Dumping done.')
+        print('Dumping data and copy to local server...')
+        self.dump_data()
+        print('Dumping done.')
         print('Restoring dump...')
         self.restore_dump()
         print('Restoring done.')
