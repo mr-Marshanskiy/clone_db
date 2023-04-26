@@ -158,9 +158,9 @@ class TransferData:
         return
 
     def move_data(self):
-        print('Dumping data and copy to local server...')
-        self.dump_data()
-        print('Dumping done.')
+        # print('Dumping data and copy to local server...')
+        # self.dump_data()
+        # print('Dumping done.')
         print('Restoring dump...')
         self.restore_dump()
         print('Restoring done.')
