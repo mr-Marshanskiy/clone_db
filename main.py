@@ -63,10 +63,15 @@ class PSQLConnection:
 
 
 class TransferData:
-    local_conn = None
-    local_cur = None
-    remote_conn = None
-    remote_cur = None
+
+    def dump_data(self):
+        with SSHConnection(**self.get_ssh_tunnel_data()) as ssh_connection:
+            print('Dumping data on remote server...')
+            self.dump_from_remote(ssh_connection=ssh_connection)
+
+            print('Copying dump to local server...')
+            self.copy_dump_to_local(ssh_connection=ssh_connection)
+        return
 
     def get_ssh_tunnel_data(self):
         return {
@@ -76,30 +81,8 @@ class TransferData:
             'password': os.getenv(f'SSH_PASSWORD'),
         }
 
-    def get_local_conn_data(self) -> PSQLData:
-        return PSQLData(
-            **{
-                'host': os.getenv(f'LOCAL_DB_HOST'),
-                'port': int(os.getenv(f'LOCAL_DB_PORT')),
-                'dbname': os.getenv(f'LOCAL_DB_NAME'),
-                'user': os.getenv(f'LOCAL_DB_USER'),
-                'password': os.getenv(f'LOCAL_DB_PASSWORD'),
-            }
-        )
-
-    def get_remote_conn_data(self) -> PSQLData:
-        return PSQLData(
-            **{
-                'host': os.getenv(f'REMOTE_DB_HOST'),
-                'port': int(os.getenv(f'LOCAL_DB_PORT')),
-                'dbname': os.getenv(f'REMOTE_DB_NAME'),
-                'user': os.getenv(f'REMOTE_DB_USER'),
-                'password': os.getenv(f'REMOTE_DB_PASSWORD'),
-            }
-        )
-
     def dump_from_remote(self, ssh_connection):
-        db_conn_data = self.get_remote_conn_data()
+        db_conn_data = PSQLData(**self.get_remote_conn_data())
         pg_dump_cmd = (
             f"sudo "
             f"-u {db_conn_data.user} "
@@ -110,18 +93,6 @@ class TransferData:
         stdin, stdout, stderr = ssh_connection.exec_command(pg_dump_cmd)
         stdout.channel.recv_exit_status()
 
-    def restore_dump(self):
-        db_conn_data = self.get_local_conn_data()
-        restore_cmd = (
-            f"sudo "
-            f"-u {db_conn_data.user} "
-            f"pg_restore "
-            f"-d {db_conn_data.dbname} "
-            f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
-        )
-        os.environ["PGPASSWORD"] = os.getenv("LOCAL_DB_PASSWORD")
-        subprocess.call(restore_cmd, shell=True)
-
     def copy_dump_to_local(self, ssh_connection):
         with SCPClient(ssh_connection.get_transport()) as scp:
             scp.get(
@@ -129,32 +100,28 @@ class TransferData:
                 local_path=os.getenv(f'LOCAL_DUMP_PATH'),
             )
 
-    def clear_tables(self):
-        db_conn_data = self.get_local_conn_data()
-        with PSQLConnection(
-            dbname=db_conn_data.dbname,
-            user=db_conn_data.user,
-            password=db_conn_data.password,
-            host=db_conn_data.host,
-            port=db_conn_data.port,
-        ) as conn:
-            cur = conn.cursor()
-            # Очистка таблицы
-            cur.execute("TRUNCATE django_migrations;")
-            conn.commit()
-        return
-
-    def dump_data(self):
-        with SSHConnection(**self.get_ssh_tunnel_data()) as ssh_connection:
-            # Создание дампа удаленной базы данных
-            self.dump_from_remote(ssh_connection=ssh_connection)
-
-            # Восстановление дампа в локальной базе данных
-            self.copy_dump_to_local(ssh_connection=ssh_connection)
-        return
+    def restore_dump(self):
+        print('Restoring dump on local server...')
+        db_conn_data = PSQLData(**self.get_local_conn_data())
+        restore_cmd = (
+            f"sudo -u {db_conn_data.user} "
+            f"pg_restore -d {db_conn_data.dbname} "
+            f"-F t -c < {os.getenv(f'LOCAL_DUMP_PATH')}"
+        )
+        os.environ["PGPASSWORD"] = os.getenv("LOCAL_DB_PASSWORD")
+        subprocess.call(restore_cmd, shell=True)
 
     def remove_old_files(self):
+        print('Removing old files...')
         os.remove(f"{os.getenv(f'LOCAL_DUMP_PATH')}")
+        return
+
+    def delete_migrations(self):
+        print('Clearing migrations...')
+        with PSQLConnection(**self.get_local_conn_data()) as conn:
+            cur = conn.cursor()
+            cur.execute("TRUNCATE django_migrations;")
+            conn.commit()
         return
 
     def project_commands(self):
@@ -170,15 +137,29 @@ class TransferData:
         os.chdir(default_path)
         return
 
+    def get_local_conn_data(self):
+        return {
+                'host': os.getenv(f'LOCAL_DB_HOST'),
+                'port': int(os.getenv(f'LOCAL_DB_PORT')),
+                'dbname': os.getenv(f'LOCAL_DB_NAME'),
+                'user': os.getenv(f'LOCAL_DB_USER'),
+                'password': os.getenv(f'LOCAL_DB_PASSWORD'),
+            }
+
+    def get_remote_conn_data(self):
+        return {
+                'host': os.getenv(f'REMOTE_DB_HOST'),
+                'port': int(os.getenv(f'LOCAL_DB_PORT')),
+                'dbname': os.getenv(f'REMOTE_DB_NAME'),
+                'user': os.getenv(f'REMOTE_DB_USER'),
+                'password': os.getenv(f'REMOTE_DB_PASSWORD'),
+            }
+
     def move_data(self):
-        print('Dumping data and copy to local server...')
         self.dump_data()
-        print('Restoring dump...')
         self.restore_dump()
-        print('Removing old files...')
-        # self.remove_old_files()
-        print('Clearing tables in db...')
-        self.clear_tables()
+        self.remove_old_files()
+        self.delete_migrations()
         print('Deleting files...')
         self.project_commands()
 
